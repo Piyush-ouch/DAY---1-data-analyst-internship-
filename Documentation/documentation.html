@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 1: Project Setup + Data Ingestion (ETL) Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --bg-light: #f8fafc;
+            --border: #e2e8f0;
+            --code-bg: #1e1e2e;
+            --code-text: #cdd6f4;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        header {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 2rem;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .org-badge {
+            display: inline-block;
+            background: #eff6ff;
+            color: var(--primary);
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+            color: #0f172a;
+        }
+
+        .subtitle {
+            font-size: 1.125rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-top: 2.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-top: 1.5rem;
+        }
+
+        p {
+            margin: 1rem 0;
+        }
+
+        ul, ol {
+            padding-left: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--bg-light);
+            font-weight: 600;
+        }
+
+        code {
+            font-family: monospace;
+            background-color: var(--bg-light);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.25rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.85rem;
+        }
+
+        .alert {
+            background-color: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            color: #991b1b;
+            margin-bottom: 0.25rem;
+        }
+
+        .alert-content {
+            color: #7f1d1d;
+            font-size: 0.95rem;
+        }
+
+        /* Print Specific Styling */
+        @media print {
+            body {
+                background-color: #fff;
+                color: #000;
+            }
+            .container {
+                max-width: 100%;
+                padding: 0;
+                margin: 0;
+            }
+            h1, h2, h3, h4, h5, h6 {
+                page-break-after: avoid;
+            }
+            table, pre, blockquote {
+                page-break-inside: avoid;
+            }
+            a {
+                text-decoration: none;
+                color: #000;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="org-badge">Bluestock Fintech</div>
+            <h1>Day 1: Project Setup + Data Ingestion (ETL)</h1>
+            <p class="subtitle">Official Documentation — Data Analyst Internship</p>
+        </header>
+
+        <section id="overview">
+            <h2>1. Executive Summary</h2>
+            <p>This document details the environment setup, dataset ingestion, API integration, and validation processes completed on Day 1 of the Bluestock Fintech Data Analyst Internship. The task ensures a robust foundation for building subsequent analytical pipelines, SQL databases, and dashboards.</p>
+        </section>
+
+        <section id="structure">
+            <h2>2. Project Directory Structure</h2>
+            <p>A standardized repository outline has been established to split raw inputs, processed outputs, analytical scripts, and reports:</p>
+            <pre><code>bluestock-data-analyst-internship/
+├── data/
+│   ├── raw/            # Raw CSVs & API fetched CSVs
+│   └── processed/      # Cleaned/transformed data
+├── notebooks/          # Exploratory Jupyter Notebooks
+├── sql/                # SQL queries & schema definitions
+├── dashboard/          # Visualization files / BI reports
+├── reports/            # Data quality summaries & PDF logs
+├── .gitignore          # Version control ignore lists
+├── requirements.txt    # Python environments list
+├── live_nav_fetch.py   # API fetch script
+└── data_ingestion.py   # Ingestion, validation, and profiling script</code></pre>
+        </section>
+
+        <section id="dependencies">
+            <h2>3. Dependencies & Installation</h2>
+            <p>To execute the ingestion pipeline, the following python packages were specified in <code>requirements.txt</code>:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Library</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>pandas</code></td>
+                        <td>Data manipulation, CSV loading, and profiling</td>
+                    </tr>
+                    <tr>
+                        <td><code>numpy</code></td>
+                        <td>Numerical operations and vectorizations</td>
+                    </tr>
+                    <tr>
+                        <td><code>matplotlib</code> & <code>seaborn</code></td>
+                        <td>Static charting and data visualization</td>
+                    </tr>
+                    <tr>
+                        <td><code>plotly</code></td>
+                        <td>Interactive web charts</td>
+                    </tr>
+                    <tr>
+                        <td><code>sqlalchemy</code></td>
+                        <td>SQL Database integration</td>
+                    </tr>
+                    <tr>
+                        <td><code>requests</code></td>
+                        <td>Consuming the external API</td>
+                    </tr>
+                    <tr>
+                        <td><code>scipy</code></td>
+                        <td>Statistical analysis and modeling</td>
+                    </tr>
+                    <tr>
+                        <td><code>jupyter</code></td>
+                        <td>Interactive notebook development</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="api-fetch">
+            <h2>4. Live NAV Integration (API)</h2>
+            <p>To acquire up-to-date Mutual Fund Net Asset Values, <code>live_nav_fetch.py</code> requests live JSON feeds from <code>https://api.mfapi.in</code>.</p>
+            <h3>Execution Flow</h3>
+            <ol>
+                <li>Retrieves scheme histories for HDFC Top 100 Direct (125497) and 5 Bluechip/Large Cap schemes (119551, 120503, 118632, 119092, 120841).</li>
+                <li>Implements a 3-stage retry loop with progressive timeouts (20s, 30s, 40s) and a delay period to safely handle transient network timeouts.</li>
+                <li>Extracts meta fields and series details, mapping them to structured DataFrames.</li>
+                <li>Saves individual CSV files as well as a merged master dataset <code>live_nav_fetched_all.csv</code> inside <code>data/raw/</code>.</li>
+            </ol>
+            
+            <div class="alert">
+                <div class="alert-title">Critical Data Mappings (Anomalies Found)</div>
+                <div class="alert-content">
+                    The API codes supplied in the assignment show a mismatch with the actual fund names returned by the official API:
+                    <ul>
+                        <li><strong>Code 125497</strong>: Labeled as <em>HDFC Top 100 Direct</em> -> API returns <strong>SBI Small Cap Fund - Direct Plan - Growth</strong></li>
+                        <li><strong>Code 119551</strong>: Labeled as <em>SBI Bluechip</em> -> API returns <strong>Aditya Birla Sun Life Banking & PSU Debt Fund - DIRECT - IDCW</strong></li>
+                        <li><strong>Code 120503</strong>: Labeled as <em>ICICI Bluechip</em> -> API returns <strong>Axis ELSS Tax Saver Fund - Direct Plan - Growth Option</strong></li>
+                        <li><strong>Code 119092</strong>: Labeled as <em>Axis Bluechip</em> -> API returns <strong>HDFC Money Market Fund - Growth Option - Direct Plan</strong></li>
+                        <li><strong>Code 120841</strong>: Labeled as <em>Kotak Bluechip</em> -> API returns <strong>quant Mid Cap Fund - Growth Option - Direct Plan</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="ingestion">
+            <h2>5. Data Profiling & Quality Validation</h2>
+            <p>The ingestion module <code>data_ingestion.py</code> handles profiling of all 10 datasets. Key statistics collected:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Dataset File</th>
+                        <th>Row Count</th>
+                        <th>Column Count</th>
+                        <th>Identified Anomalies</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>01_fund_master.csv</code></td>
+                        <td>40</td>
+                        <td>15</td>
+                        <td>None (all scheme codes are 6-digit integers)</td>
+                    </tr>
+                    <tr>
+                        <td><code>02_nav_history.csv</code></td>
+                        <td>46,000</td>
+                        <td>3</td>
+                        <td>None</td>
+                    </tr>
+                    <tr>
+                        <td><code>03_aum_by_fund_house.csv</code></td>
+                        <td>90</td>
+                        <td>5</td>
+                        <td>None</td>
+                    </tr>
+                    <tr>
+                        <td><code>04_monthly_sip_inflows.csv</code></td>
+                        <td>48</td>
+                        <td>6</td>
+                        <td>12 missing values in <code>yoy_growth_pct</code> (expected for first year)</td>
+                    </tr>
+                    <tr>
+                        <td><code>05_category_inflows.csv</code></td>
+                        <td>144</td>
+                        <td>3</td>
+                        <td>None</td>
+                    </tr>
+                    <tr>
+                        <td><code>06_industry_folio_count.csv</code></td>
+                        <td>21</td>
+                        <td>6</td>
+                        <td>None</td>
+                    </tr>
+                    <tr>
+                        <td><code>07_scheme_performance.csv</code></td>
+                        <td>40</td>
+                        <td>19</td>
+                        <td>None</td>
+                    </tr>
+                    <tr>
+                        <td><code>08_investor_transactions.csv</code></td>
+                        <td>32,778</td>
+                        <td>13</td>
+                        <td>None</td>
+                    </tr>
+                    <tr>
+                        <td><code>09_portfolio_holdings.csv</code></td>
+                        <td>322</td>
+                        <td>8</td>
+                        <td>None</td>
+                    </tr>
+                    <tr>
+                        <td><code>10_benchmark_indices.csv</code></td>
+                        <td>8,050</td>
+                        <td>3</td>
+                        <td>None</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Cross-Dataset AMFI Code Consistency</h3>
+            <p>A set comparison was run between all scheme codes defined in <code>01_fund_master.csv</code> (Master) and <code>02_nav_history.csv</code> (Transactions):</p>
+            <ul>
+                <li>Unique codes in Fund Master: <strong>40</strong></li>
+                <li>Unique codes in NAV History: <strong>40</strong></li>
+                <li>Mismatched/Missing codes: <strong>0 (100% integrity)</strong></li>
+            </ul>
+        </section>
+
+        <section id="git">
+            <h2>6. Version Control</h2>
+            <p>The project uses Git for version control. A <code>.gitignore</code> file prevents tracking compiled python caches, zip files, local logs, and system artifacts. The initial Day 1 deliverables have been committed: <code>git commit -m "Day 1: Data ingestion complete"</code>.</p>
+        </section>
+    </div>
+</body>
+</html>
