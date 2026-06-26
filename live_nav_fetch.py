@@ -1,15 +1,36 @@
 import os
+import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+from typing import Tuple, Optional
 import requests
 import pandas as pd
-import time
 
-def fetch_scheme_data(scheme_code, retries=3, delay=5):
+# Configure professional logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+def fetch_scheme_data(
+    session: requests.Session,
+    scheme_code: str,
+    retries: int = 3,
+    delay: int = 5
+) -> Tuple[Optional[pd.DataFrame], Optional[dict]]:
+    """
+    Fetches historical NAV data for a given scheme code from mfapi.in.
+    Uses Session pooling for speed and handles retries with progressive timeouts.
+    """
     url = f"https://api.mfapi.in/mf/{scheme_code}"
+    
     for attempt in range(retries):
-        print(f"Fetching data for scheme code: {scheme_code} from {url} (Attempt {attempt+1}/{retries})...")
+        logger.info(f"Fetching scheme {scheme_code} (Attempt {attempt+1}/{retries})...")
         try:
+            # progressive timeout to handle latency spike
             timeout_val = 20 + attempt * 10
-            response = requests.get(url, timeout=timeout_val)
+            response = session.get(url, timeout=timeout_val)
             response.raise_for_status()
             data = response.json()
             
@@ -17,31 +38,33 @@ def fetch_scheme_data(scheme_code, retries=3, delay=5):
             nav_data = data.get("data", [])
             
             if not nav_data:
-                print(f"No NAV data found for scheme code: {scheme_code}")
+                logger.warning(f"No NAV data found for scheme {scheme_code}")
                 return None, None
                 
-            print(f"Successfully fetched {len(nav_data)} records for {meta.get('scheme_name', 'Unknown')}.")
+            logger.info(f"Successfully fetched {len(nav_data)} records for {meta.get('scheme_name', 'Unknown')}.")
             
-            # Create DataFrame
+            # Structuring data efficiently
             df = pd.DataFrame(nav_data)
-            # The API returns date as 'dd-mm-yyyy' and nav as string.
-            # Let's add metadata fields to the raw output for completeness.
-            df['scheme_code'] = scheme_code
-            df['scheme_name'] = meta.get('scheme_name', '')
             
-            # Reorder columns to put metadata first
+            # Cast types early to minimize memory footprint
+            df['scheme_code'] = int(scheme_code)
+            df['scheme_name'] = meta.get('scheme_name', '').strip()
+            df['nav'] = pd.to_numeric(df['nav'], errors='coerce').astype('float32')
+            
+            # Reorder columns
             cols = ['scheme_code', 'scheme_name', 'date', 'nav']
             df = df[cols]
             
             return df, meta
+            
         except Exception as e:
-            print(f"Attempt {attempt+1} failed for scheme code {scheme_code}: {e}")
+            logger.error(f"Attempt {attempt+1} failed for scheme {scheme_code}: {e}")
             if attempt < retries - 1:
-                print(f"Waiting {delay} seconds before next attempt...")
+                import time
                 time.sleep(delay)
-            else:
-                print(f"All attempts failed for scheme code {scheme_code}.")
-                return None, None
+                
+    logger.error(f"All attempts failed for scheme {scheme_code}.")
+    return None, None
 
 def main():
     schemes = {
@@ -53,23 +76,43 @@ def main():
         "120841": "Kotak Bluechip"
     }
     
-    os.makedirs("data/raw", exist_ok=True)
+    output_dir = Path("data/raw")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
     all_dfs = []
     
-    for code, name in schemes.items():
-        df, meta = fetch_scheme_data(code)
-        if df is not None:
-            # Save individual raw CSV
-            filename = f"data/raw/{code}_nav.csv"
-            df.to_csv(filename, index=False)
-            print(f"Saved {name} data to {filename}")
-            all_dfs.append(df)
+    # Session reuse for socket pooling (speed optimization)
+    with requests.Session() as session:
+        # Concurrent fetching using thread pool (multithreading optimization)
+        with ThreadPoolExecutor(max_workers=len(schemes)) as executor:
+            future_to_scheme = {
+                executor.submit(fetch_scheme_data, session, code): (code, name)
+                for code, name in schemes.items()
+            }
             
+            for future in as_completed(future_to_scheme):
+                code, name = future_to_scheme[future]
+                try:
+                    df, meta = future.result()
+                    if df is not None:
+                        # Save individual raw CSV
+                        filename = output_dir / f"{code}_nav.csv"
+                        df.to_csv(filename, index=False)
+                        logger.info(f"Saved {name} data to {filename}")
+                        all_dfs.append(df)
+                except Exception as exc:
+                    logger.error(f"Scheme {code} generated an exception: {exc}")
+                    
     if all_dfs:
         combined_df = pd.concat(all_dfs, ignore_index=True)
-        combined_filename = "data/raw/live_nav_fetched_all.csv"
-        combined_df.to_csv(combined_filename, index=False)
-        print(f"Saved combined fetched NAV data to {combined_filename}")
+        combined_filename = output_dir / "live_nav_fetched_all.csv"
         
+        # Optimize memory usage
+        combined_df['scheme_code'] = combined_df['scheme_code'].astype('int32')
+        combined_df['nav'] = combined_df['nav'].astype('float32')
+        
+        combined_df.to_csv(combined_filename, index=False)
+        logger.info(f"Saved combined fetched NAV data to {combined_filename}")
+
 if __name__ == "__main__":
     main()
